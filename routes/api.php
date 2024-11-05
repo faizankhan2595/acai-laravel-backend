@@ -1,8 +1,10 @@
 <?php
 use App\Notifications\GeneralNotification;
 use App\User;
+use App\GenerateQrCode;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
+use App\Notifications\ScanSuccessForSales;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,6 +19,15 @@ use Illuminate\Support\Facades\Route;
 Route::get('haha-notification', function () {
     DB::statement('UPDATE `users` SET gold_activation_date = email_verified_at AND  gold_expiring_date = DATE_ADD(DATE_FORMAT(email_verified_at, "%Y-%m-%d 23:59:59"), INTERVAL 1 YEAR)  WHERE id = 513 AND membership_type = 2 AND gold_activation_date IS NULL');
 });
+
+Route::get('haha-test-123', function () {
+    $user = User::find(25925);
+    $qrcode = GenerateQrCode::first();
+    $user->notify(new ScanSuccessForSales($qrcode));
+    return response()->json(['success' => true, 'message' => 'Notification sent']);
+});
+
+
 Route::post('register', 'Api\UserController@register');
 Route::post('login', 'Api\UserController@authenticate');
 Route::post('/password/email', 'Api\ForgotPasswordController@sendResetLinkEmail');
