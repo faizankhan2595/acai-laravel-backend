@@ -5,6 +5,7 @@ use App\GenerateQrCode;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use App\Notifications\ScanSuccessForSales;
+use Illuminate\Support\Facades\Log;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,6 +30,8 @@ Route::get('haha-test-123', function () {
         'message' => 'Here are 5 points as a gift from us.',
         'image' => null
     ]));
+    
+    Log::info('Notification sent successfully');
     
     return response()->json(['success' => true, 'message' => 'Notification sent']);
 });
