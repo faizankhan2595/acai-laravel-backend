@@ -30,7 +30,7 @@ return [
      *
      */
     'credentials' => [
-        'file' => storage_path('app/secret/acai-3bb2e-firebase-adminsdk-acag1-8e9d55a547.json'), //storage_path('app/secret/acai-3bb2e-firebase-adminsdk-acag1-8e9d55a547.json')
+        'file' => "", //storage_path('app/secret/acai-3bb2e-firebase-adminsdk-acag1-8e9d55a547.json')
 
         /**
          * If you want to prevent the auto discovery of credentials, set the
