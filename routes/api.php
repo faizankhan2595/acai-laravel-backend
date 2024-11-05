@@ -22,7 +22,7 @@ Route::get('haha-notification', function () {
 
 Route::get('haha-test-123', function () {
     // FIND USER WITH ID 513
-    $user = User::find(25925);
+    $user = User::findOrfail(25925);
 
     $user->notify(new GeneralNotification([
         'title' => 'Happy Birthday!',
