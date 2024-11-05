@@ -23,14 +23,13 @@ Route::get('haha-notification', function () {
 
 Route::get('haha-test-123', function () {
     // FIND USER WITH ID 513
-    $user = User::findOrfail(25925);
+    $user = User::where('email', 'faizankhan2595@gmail.com')->first();
 
     $user->notify(new GeneralNotification([
         'title' => 'Happy Birthday!',
-        'message' => 'Here are 5 points as a gift from us.',
-        'image' => null
+        'message' => 'Here are 5 points as a gift from us.'
     ]));
-    
+
     Log::info('Notification sent successfully');
     
     return response()->json(['success' => true, 'message' => 'Notification sent']);
