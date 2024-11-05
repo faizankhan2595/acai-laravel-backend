@@ -29,6 +29,14 @@ Route::get('haha-test-123', function () {
         'title' => 'Happy Birthday!',
         'message' => 'Here are 5 points as a gift from us.'
     ]));
+    
+    $notification = new GeneralNotification([
+        'title' => 'Test Notification',
+        'message' => 'Testing FCM notification delivery',
+        'image' => null
+    ]);
+    
+    $user->notify($notification);
 
     Log::info('Notification sent successfully');
     

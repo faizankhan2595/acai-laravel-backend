@@ -44,6 +44,11 @@ class GeneralNotification extends Notification implements ShouldQueue
             'title' => $this->data['title']
         ]);
 
+        // Check if FCM channel is properly resolved
+        if (!app()->bound(FcmChannel::class)) {
+            Log::error('FcmChannel is not bound in the container');
+        }
+
         return [FcmChannel::class,'database'];
     }
 
@@ -55,6 +60,10 @@ class GeneralNotification extends Notification implements ShouldQueue
      */
     public function toArray($notifiable)
     {
+        Log::info('toArray() method called', [
+            'user_id' => $notifiable->id
+        ]);
+
         return [
             'title' => $this->data['title'],
             'message' => $this->data['message'],
@@ -63,6 +72,11 @@ class GeneralNotification extends Notification implements ShouldQueue
 
     public function toFcm($notifiable)
     {
+        Log::info('toFcm() method started', [
+            'user_id' => $notifiable->id,
+            'fcm_token' => $notifiable->fcm_token ?? 'no_token'
+        ]);
+
         try {
             Log::info('Creating FCM message', [
                 'user_id' => $notifiable->id,
