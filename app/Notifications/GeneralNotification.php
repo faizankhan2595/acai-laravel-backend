@@ -37,11 +37,11 @@ class GeneralNotification extends Notification implements ShouldQueue
      */
     public function via($notifiable)
     {
-        // Log the notification attempt
-        Log::info('Sending notification via channels', [
+        // Log complete notification itself for debugging
+        Log::info('GeneralNotification via() method called', [
             'user_id' => $notifiable->id,
-            'fcm_token' => $notifiable->fcm_token ?? 'no_token',
-            'title' => $this->data['title']
+            'notification' => json_encode($this->data)
+            'fcm_token' => json_encode($notifiable)
         ]);
 
         // Check if FCM channel is properly resolved
