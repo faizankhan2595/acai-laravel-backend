@@ -5,7 +5,6 @@ use App\GenerateQrCode;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use App\Notifications\ScanSuccessForSales;
-use App\Notifications\GeneralNotification;
 
 /*
 |--------------------------------------------------------------------------
