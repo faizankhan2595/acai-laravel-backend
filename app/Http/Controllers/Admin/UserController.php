@@ -15,6 +15,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use App\Jobs\NotifyOnCompletedExport;
 use App\Setting;
+use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
@@ -279,6 +280,21 @@ class UserController extends Controller
     public function forcedelete($id)
     {
         $user = User::withTrashed()->findOrFail($id);
+
+        DB::table('comments')->where('user_id', $user->id)->delete();
+        DB::table('device_tokens')->where('user_id', $user->id)->delete();
+        DB::table('generate_qr_codes')->where('scanned_by', $user->id)->delete();
+        DB::table('generate_qr_codes')->where('generated_by', $user->id)->delete();
+        DB::table('likes')->where('user_id', $user->id)->delete();
+
+
+        DB::table('orders')->where('user_id', $user->id)->update(['user_id' => 25915]);
+        DB::table('orders')->where('scanned_by', $user->id)->update(['scanned_by' => 25915]);
+
+        DB::table('point_transactions')->where('user_id', $user->id)->delete();
+        DB::table('reward_voucher_user')->where('user_id', $user->id)->delete();
+        DB::table('reward_vouchers')->where('user_id', $user->id)->delete();
+
         Storage::disk('public')->delete($user->avatar);
         $user->points()->delete();
         $user->deviceTokens()->delete();
