@@ -23,9 +23,6 @@ Route::get('haha-notification', function () {
 Route::get('haha-test-123', function () {
     // FIND USER WITH ID 513
     $user = User::find(25925);
-    // GET RANDOM QR CODE
-    // $qrcode = GenerateQrCode::where("code", "BDJG12IHXFBBVCX")->first();
-    // $user->notify(new ScanSuccessForSales($qrcode));
 
     $user->notify(new GeneralNotification([
         'title' => 'Happy Birthday!',
