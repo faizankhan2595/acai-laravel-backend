@@ -5,6 +5,7 @@ use App\GenerateQrCode;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use App\Notifications\ScanSuccessForSales;
+use App\Notifications\GeneralNotification;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,8 +25,15 @@ Route::get('haha-test-123', function () {
     // FIND USER WITH ID 513
     $user = User::find(25925);
     // GET RANDOM QR CODE
-    $qrcode = GenerateQrCode::where("code", "BDJG12IHXFBBVCX")->first();
-    $user->notify(new ScanSuccessForSales($qrcode));
+    // $qrcode = GenerateQrCode::where("code", "BDJG12IHXFBBVCX")->first();
+    // $user->notify(new ScanSuccessForSales($qrcode));
+
+    $user->notify(new GeneralNotification([
+        'title' => 'Happy Birthday!',
+        'message' => 'Here are 5 points as a gift from us.',
+        'image' => null
+    ]));
+    
     return response()->json(['success' => true, 'message' => 'Notification sent']);
 });
 
