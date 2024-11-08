@@ -259,6 +259,11 @@ class BlogController extends Controller
     public function forcedelete($id)
     {
         $blog = Blog::withTrashed()->findOrFail($id);
+        DB::table('images')->where('blog_id', $blog->id)->delete();
+        DB::table('blog_views')->where('blog_id', $blog->id)->delete();
+        DB::table('likes')->where('likeable_id', $blog->id)->delete();
+        DB::table('comments')->where('blog_id', $blog->id)->delete();
+        
         Storage::delete($blog->featured_image);
         $blog->forceDelete();
         return redirect(route('blog.trash'))
