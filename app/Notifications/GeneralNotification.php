@@ -80,8 +80,7 @@ class GeneralNotification extends Notification implements ShouldQueue
                     ApnsConfig::create()
                         ->setFcmOptions(ApnsFcmOptions::create()->setAnalyticsLabel('analytics_ios')->setImage($this->data['image']))
                         ->setPayload(['aps' => ['sound' => 'default']])
-                    )
-                ->setTokens($tokens);
+                );
 
             return $fcmMessage;
 
