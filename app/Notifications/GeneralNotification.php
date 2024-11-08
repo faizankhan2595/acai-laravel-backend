@@ -15,9 +15,8 @@ use NotificationChannels\Fcm\Resources\ApnsFcmOptions;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 
-class GeneralNotification extends Notification implements ShouldQueue
+class GeneralNotification extends Notification
 {
-    use Queueable;
     protected $data;
     /**
      * Create a new notification instance.
