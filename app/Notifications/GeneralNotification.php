@@ -58,7 +58,7 @@ class GeneralNotification extends Notification implements ShouldQueue
     public function toFcm($notifiable)
     {
         try {
-            $devices = DB::table('devices')->where('user_id', $notifiable->id)->get();
+            $devices = DB::table('device_tokens')->where('user_id', $notifiable->id)->get();
             $tokens = $devices->pluck('fcm_token')->toArray();
 
             Log::info('FCM tokens', [
