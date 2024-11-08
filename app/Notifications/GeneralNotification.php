@@ -82,9 +82,7 @@ class GeneralNotification extends Notification implements ShouldQueue
                         ->setPayload(['aps' => ['sound' => 'default']])
                     )
                 ->setTokens($tokens);
-
-            return $fcmMessage;
-
+                
         } catch (\Exception $e) {
             Log::error('Error creating FCM message', [
                 'user_id' => $notifiable->id,
