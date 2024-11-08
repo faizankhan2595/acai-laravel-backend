@@ -57,20 +57,41 @@ class GeneralNotification extends Notification implements ShouldQueue
 
     public function toFcm($notifiable)
     {
-        return FcmMessage::create()
-            ->setData(['type' => 'general_notification'])
-            ->setNotification(\NotificationChannels\Fcm\Resources\Notification::create()
-                ->setTitle($this->data['title'])
-                ->setBody($this->data['message'])
-                ->setImage($this->data['image']))
-            ->setAndroid(
-                AndroidConfig::create()
-                    ->setFcmOptions(AndroidFcmOptions::create()->setAnalyticsLabel('analytics'))
-                    ->setNotification(AndroidNotification::create()->setColor('#0A0A0A'))
-            )->setApns(
-                ApnsConfig::create()
-                    ->setFcmOptions(ApnsFcmOptions::create()->setAnalyticsLabel('analytics_ios')->setImage($this->data['image']))
-                    ->setPayload(['aps' => ['sound' => 'default']])
-            );
+        try {
+            $devices = DB::table('device_tokens')->where('user_id', $notifiable->id)->get();
+            $tokens = $devices->pluck('fcm_token')->toArray();
+
+            Log::info('FCM tokens', [
+                'user_id' => $notifiable->id,
+                'tokens' => json_encode($tokens)
+            ]);
+
+            return FcmMessage::create()
+                ->setData(['type' => 'general_notification'])
+                ->setNotification(\NotificationChannels\Fcm\Resources\Notification::create()
+                    ->setTitle($this->data['title'])
+                    ->setBody($this->data['message'])
+                    ->setImage($this->data['image']))
+                ->setAndroid(
+                    AndroidConfig::create()
+                        ->setFcmOptions(AndroidFcmOptions::create()->setAnalyticsLabel('analytics'))
+                        ->setNotification(AndroidNotification::create()->setColor('#0A0A0A'))
+                )->setApns(
+                    ApnsConfig::create()
+                        ->setFcmOptions(ApnsFcmOptions::create()->setAnalyticsLabel('analytics_ios')->setImage($this->data['image']))
+                        ->setPayload(['aps' => ['sound' => 'default']])
+                    )
+                ->setTokens($tokens);
+
+            return $fcmMessage;
+
+        } catch (\Exception $e) {
+            Log::error('Error creating FCM message', [
+                'user_id' => $notifiable->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return null;
+        }
     }
 }
