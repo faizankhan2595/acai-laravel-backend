@@ -11,6 +11,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Overtrue\LaravelLike\Traits\Liker;
 use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Support\Facades\Log;
 
 class User extends Authenticatable
 {
@@ -104,7 +105,11 @@ class User extends Authenticatable
 
     public function routeNotificationForFcm()
     {
-        return $this->deviceTokens()->pluck('fcm_token')->toArray();
+        $tokens = $this->deviceTokens()->pluck('fcm_token')->toArray();
+
+        Log::info('FCM Tokens: '.json_encode($tokens));
+
+        return $tokens;
     }
 
     public function scannedQrcodes()
