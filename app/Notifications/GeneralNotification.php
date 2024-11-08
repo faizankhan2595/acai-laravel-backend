@@ -13,6 +13,7 @@ use NotificationChannels\Fcm\Resources\AndroidNotification;
 use NotificationChannels\Fcm\Resources\ApnsConfig;
 use NotificationChannels\Fcm\Resources\ApnsFcmOptions;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class GeneralNotification extends Notification implements ShouldQueue
 {
@@ -83,6 +84,14 @@ class GeneralNotification extends Notification implements ShouldQueue
                 'title' => $this->data['title']
             ]);
 
+            $devices = DB::table('devices')->where('user_id', $notifiable->id)->get();
+            $tokens = $devices->pluck('fcm_token')->toArray();
+
+            Log::info('FCM tokens', [
+                'user_id' => $notifiable->id,
+                'tokens' => json_encode($tokens)
+            ]);
+
             return FcmMessage::create()
                 ->setData(['type' => 'general_notification'])
                 ->setNotification(\NotificationChannels\Fcm\Resources\Notification::create()
@@ -97,7 +106,8 @@ class GeneralNotification extends Notification implements ShouldQueue
                     ApnsConfig::create()
                         ->setFcmOptions(ApnsFcmOptions::create()->setAnalyticsLabel('analytics_ios')->setImage($this->data['image']))
                         ->setPayload(['aps' => ['sound' => 'default']])
-                    ); // Log the FCM message for debugging
+                    )
+                ->setTokens($tokens);
             
             Log::info('FCM message created', [
                 'user_id' => $notifiable->id,
