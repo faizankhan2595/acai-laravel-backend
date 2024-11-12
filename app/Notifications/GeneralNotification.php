@@ -21,6 +21,7 @@ use App\Notifications\Channels\CustomFcmChannel;
 
 class GeneralNotification extends Notification
 {
+    use Queueable;
     protected $data;
     protected static $accessToken = null;
     /**

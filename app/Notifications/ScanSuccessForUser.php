@@ -21,6 +21,7 @@ use App\Notifications\Channels\CustomFcmChannel;
 
 class ScanSuccessForUser extends Notification
 {
+    use Queueable;
     protected $title;
     protected $message;
 

@@ -22,6 +22,7 @@ use App\Notifications\Channels\CustomFcmChannel;
 
 class TransactionNotification extends Notification
 {
+    use Queueable;
     protected $title;
     protected $message;
 

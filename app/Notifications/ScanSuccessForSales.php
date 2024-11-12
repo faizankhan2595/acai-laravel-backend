@@ -20,6 +20,7 @@ use App\Notifications\Channels\CustomFcmChannel;
 
 class ScanSuccessForSales extends Notification
 {
+    use Queueable;
     protected $title;
     protected $message;
     public $points;
