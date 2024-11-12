@@ -21,51 +21,78 @@ class NotificationController extends Controller
             'notification_title' => 'required',
             'notification_desc'  => 'required',
         ]);
+
+        // Handle image upload
+        $file = null;
         if ($request->hasFile('image')) {
             $file = $request->file('image')->store('notification', 'public');
         }
+
+        // Prepare notification data
         $notification = [
             'title'   => $request->notification_title,
             'message' => $request->notification_desc,
-            'image'   => (isset($file)) ? url('/').Storage::url($file) : null,
+            'image'   => $file ? url('/').Storage::url($file) : null,
         ];
+
+        // Initialize batch jobs array
+        $jobs = [];
+
+        // Handle customer notifications
         if (isset($request->purple_customers) || isset($request->gold_customers)) {
-            $customers = User::role('user')->whereExists(function($query) {
-                 $query->from('device_tokens')
-                       ->whereColumn('user_id', 'users.id');
-               })->get();
-            foreach ($customers as $key => $customer) {
-                if (isset($request->purple_customers) && !isset($request->gold_customers)) {
-                    if ($customer->membership(true) == 1) {
-                        $customer->notify(new GeneralNotification($notification));
-                    }
-                }
-                else if (!isset($request->purple_customers) && isset($request->gold_customers)) {
-                    if ($customer->membership(true) == 2) {
-                        $customer->notify(new GeneralNotification($notification));
-                    }
-                }
-                else{
-                    $customer->notify(new GeneralNotification($notification));
-                }
+            $query = User::role('user')->whereExists(function($query) {
+                $query->from('device_tokens')
+                      ->whereColumn('user_id', 'users.id');
+            });
+
+            // Apply membership filters
+            if (isset($request->purple_customers) && !isset($request->gold_customers)) {
+                $query->whereHas('membership', function($q) {
+                    $q->where('type', 1);
+                });
+            } elseif (!isset($request->purple_customers) && isset($request->gold_customers)) {
+                $query->whereHas('membership', function($q) {
+                    $q->where('type', 2);
+                });
             }
+
+            // Process in chunks to avoid memory issues
+            $query->chunk(100, function($customers) use ($notification, &$jobs) {
+                $jobs[] = new SendBatchNotifications(
+                    $customers->pluck('id')->toArray(),
+                    $notification
+                );
+            });
         }
 
+        // Handle merchant notifications
         if (isset($request->all_merchnats)) {
-            $merchants = User::role('merchant')->get();
-            foreach ($merchants as $key => $merchant) {
-                $merchant->notify(new GeneralNotification($notification));
-            }
+            User::role('merchant')->chunk(100, function($merchants) use ($notification, &$jobs) {
+                $jobs[] = new SendBatchNotifications(
+                    $merchants->pluck('id')->toArray(),
+                    $notification
+                );
+            });
         }
 
+        // Handle sales person notifications
         if (isset($request->all_sales_persons)) {
-            $sales_persons = User::role('sales_person')->get();
-            foreach ($sales_persons as $key => $sales_person) {
-                $sales_person->notify(new GeneralNotification($notification));
-            }
+            User::role('sales_person')->chunk(100, function($salesPersons) use ($notification, &$jobs) {
+                $jobs[] = new SendBatchNotifications(
+                    $salesPersons->pluck('id')->toArray(),
+                    $notification
+                );
+            });
+        }
+
+        // Dispatch all jobs as a batch
+        if (!empty($jobs)) {
+            Bus::batch($jobs)
+                ->allowFailures()
+                ->dispatch();
         }
 
         return redirect(route('notification.create'))
-            ->with('success', 'Notification sent successfully.');
+            ->with('success', 'Notifications are being sent in the background.');
     }
 }
