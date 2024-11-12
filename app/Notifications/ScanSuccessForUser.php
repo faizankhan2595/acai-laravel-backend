@@ -190,9 +190,9 @@ class ScanSuccessForUser extends Notification
     public function toFcmData($notifiable)
     {
         return [
-            'title' => $this->data['title'],
-            'message' => $this->data['message'],
-            'image' => $this->data['image'],
+            'title' => $this->title,
+            'message' => $this->message,
+            'image' => null,
             'data' => [
                 'type' => 'reward_scan_success',
             ],

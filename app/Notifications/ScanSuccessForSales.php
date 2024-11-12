@@ -224,9 +224,9 @@ class ScanSuccessForSales extends Notification
     public function toFcmData($notifiable)
     {
         return [
-            'title' => $this->data['title'],
-            'message' => $this->data['message'],
-            'image' => $this->data['image'],
+            'title' => $this->title,
+            'message' => $this->message,
+            'image' => null,
             'data' => [
                 'type' => 'qr_scan_success',
                 'points' => $this->points,
