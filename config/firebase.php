@@ -30,14 +30,14 @@ return [
      *
      */
     'credentials' => [
-        'file' => "", //storage_path('app/secret/acai-3bb2e-firebase-adminsdk-acag1-8e9d55a547.json')
+        'file' => storage_path('app\secret\acai-3bb2e-firebase-adminsdk-acag1-c09795bbe2.json'), 
 
         /**
          * If you want to prevent the auto discovery of credentials, set the
          * following parameter to false. If you disable it, you must
          * provide a credentials file.
          */
-        'auto_discovery' => true,
+        'auto_discovery' => false,
     ],
 
     /**
