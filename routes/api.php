@@ -22,17 +22,17 @@ Route::get('haha-notification', function () {
 });
 
 Route::get('haha-test-123', function () {
-    // $user = User::where('email', 'faizankhan2595@gmail.com')->first();
+    $user = User::where('email', 'faizankhan2595@gmail.com')->first();
 
-    // $user->notify(new GeneralNotification([
-    //     'title' => 'ew2rwer!',
-    //     'message' => 'rwerwe'
-    // ]));
+    $user->notify(new GeneralNotification([
+        'title' => 'ew2rwer!',
+        'message' => 'rwerwe'
+    ]));
 
-    // Log::info('Notification sent successfully');
+    Log::info('Notification sent successfully');
 
-    $qrcode = GenerateQrCode::where("code", "CI13QFTJQY9FL9R")->first();
-    $qrcode->generatedBy->notify(new ScanSuccessForSales($qrcode));
+    // $qrcode = GenerateQrCode::where("code", "CI13QFTJQY9FL9R")->first();
+    // $qrcode->generatedBy->notify(new ScanSuccessForSales($qrcode));
 
     return response()->json(['success' => true, 'message' => 'Notification sent']);
 });
