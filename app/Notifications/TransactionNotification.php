@@ -208,7 +208,7 @@ class TransactionNotification extends Notification
     public function toFcmData($notifiable)
     {
         return [
-            'title' => $=$this->title,
+            'title' => $this->title,
             'message' => $this->message,
             'image' => null,
             'data' => [
