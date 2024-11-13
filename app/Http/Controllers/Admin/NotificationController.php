@@ -56,21 +56,21 @@ class NotificationController extends Controller
 
             // Process in chunks
             $query->chunk(100, function($users) use ($notification) {
-                dispatch(new SendNotifications($users->pluck('id')->toArray(), $notification));
+                dispatch(new SendBatchNotifications($users->pluck('id')->toArray(), $notification));
             });
         }
 
         // Handle merchant notifications
         if (isset($request->all_merchnats)) {
             User::role('merchant')->chunk(100, function($users) use ($notification) {
-                dispatch(new SendNotifications($users->pluck('id')->toArray(), $notification));
+                dispatch(new SendBatchNotifications($users->pluck('id')->toArray(), $notification));
             });
         }
 
         // Handle sales person notifications
         if (isset($request->all_sales_persons)) {
             User::role('sales_person')->chunk(100, function($users) use ($notification) {
-                dispatch(new SendNotifications($users->pluck('id')->toArray(), $notification));
+                dispatch(new SendBatchNotifications($users->pluck('id')->toArray(), $notification));
             });
         }
 
