@@ -8,6 +8,7 @@ use App\Jobs\SendBatchNotifications;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Bus;
 
 class NotificationController extends Controller
 {
