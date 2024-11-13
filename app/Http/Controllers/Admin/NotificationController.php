@@ -8,7 +8,6 @@ use App\Jobs\SendBatchNotifications;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Bus;
 
 class NotificationController extends Controller
 {
@@ -37,9 +36,6 @@ class NotificationController extends Controller
             'image'   => $file ? url('/').Storage::url($file) : null,
         ];
 
-        // Initialize batch jobs array
-        $jobs = [];
-
         // Handle customer notifications
         if (isset($request->purple_customers) || isset($request->gold_customers)) {
             $query = User::role('user')->whereExists(function($query) {
@@ -58,40 +54,24 @@ class NotificationController extends Controller
                 });
             }
 
-            // Process in chunks to avoid memory issues
-            $query->chunk(100, function($customers) use ($notification, &$jobs) {
-                $jobs[] = new SendBatchNotifications(
-                    $customers->pluck('id')->toArray(),
-                    $notification
-                );
+            // Process in chunks
+            $query->chunk(100, function($users) use ($notification) {
+                dispatch(new SendNotifications($users->pluck('id')->toArray(), $notification));
             });
         }
 
         // Handle merchant notifications
         if (isset($request->all_merchnats)) {
-            User::role('merchant')->chunk(100, function($merchants) use ($notification, &$jobs) {
-                $jobs[] = new SendBatchNotifications(
-                    $merchants->pluck('id')->toArray(),
-                    $notification
-                );
+            User::role('merchant')->chunk(100, function($users) use ($notification) {
+                dispatch(new SendNotifications($users->pluck('id')->toArray(), $notification));
             });
         }
 
         // Handle sales person notifications
         if (isset($request->all_sales_persons)) {
-            User::role('sales_person')->chunk(100, function($salesPersons) use ($notification, &$jobs) {
-                $jobs[] = new SendBatchNotifications(
-                    $salesPersons->pluck('id')->toArray(),
-                    $notification
-                );
+            User::role('sales_person')->chunk(100, function($users) use ($notification) {
+                dispatch(new SendNotifications($users->pluck('id')->toArray(), $notification));
             });
-        }
-
-        // Dispatch all jobs as a batch
-        if (!empty($jobs)) {
-            Bus::batch($jobs)
-                ->allowFailures()
-                ->dispatch();
         }
 
         return redirect(route('notification.create'))

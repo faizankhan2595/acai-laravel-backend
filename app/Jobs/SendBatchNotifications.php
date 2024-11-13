@@ -4,16 +4,15 @@ namespace App\Jobs;
 
 use App\Models\User;
 use App\Notifications\GeneralNotification;
-use Illuminate\Bus\Batchable;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 
-class SendBatchNotifications implements ShouldQueue
+class SendNotifications implements ShouldQueue
 {
-    use Batchable, Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected $userIds;
     protected $notification;
@@ -26,8 +25,16 @@ class SendBatchNotifications implements ShouldQueue
 
     public function handle()
     {
-        User::whereIn('id', $this->userIds)->each(function ($user) {
-            $user->notify(new GeneralNotification($this->notification));
-        });
+        User::whereIn('id', $this->userIds)
+            ->chunk(20, function($users) {
+                foreach ($users as $user) {
+                    try {
+                        $user->notify(new GeneralNotification($this->notification));
+                    } catch (\Exception $e) {
+                        \Log::error('Failed to send notification to user ' . $user->id . ': ' . $e->getMessage());
+                        continue;
+                    }
+                }
+            });
     }
 }
