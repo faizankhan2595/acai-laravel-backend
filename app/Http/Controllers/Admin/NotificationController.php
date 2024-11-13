@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Notifications\GeneralNotification;
-use App\Jobs\SendBatchNotifications;
+use App\Jobs\SendBatchNotificationsNew;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -56,21 +56,21 @@ class NotificationController extends Controller
 
             // Process in chunks
             $query->chunk(100, function($users) use ($notification) {
-                dispatch(new SendBatchNotifications($users->pluck('id')->toArray(), $notification));
+                dispatch(new SendBatchNotificationsNew($users->pluck('id')->toArray(), $notification));
             });
         }
 
         // Handle merchant notifications
         if (isset($request->all_merchnats)) {
             User::role('merchant')->chunk(100, function($users) use ($notification) {
-                dispatch(new SendBatchNotifications($users->pluck('id')->toArray(), $notification));
+                dispatch(new SendBatchNotificationsNew($users->pluck('id')->toArray(), $notification));
             });
         }
 
         // Handle sales person notifications
         if (isset($request->all_sales_persons)) {
             User::role('sales_person')->chunk(100, function($users) use ($notification) {
-                dispatch(new SendBatchNotifications($users->pluck('id')->toArray(), $notification));
+                dispatch(new SendBatchNotificationsNew($users->pluck('id')->toArray(), $notification));
             });
         }
 
