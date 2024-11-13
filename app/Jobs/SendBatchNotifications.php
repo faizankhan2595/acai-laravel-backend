@@ -4,7 +4,6 @@ namespace App\Jobs;
 
 use App\Models\User;
 use App\Notifications\GeneralNotification;
-use Illuminate\Bus\Batchable;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -13,7 +12,7 @@ use Illuminate\Queue\SerializesModels;
 
 class SendBatchNotifications implements ShouldQueue
 {
-    use Batchable, Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected $userIds;
     protected $notification;
