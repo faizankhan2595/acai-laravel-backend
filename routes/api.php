@@ -22,7 +22,7 @@ Route::get('haha-notification', function () {
 });
 
 Route::get('haha-test-123', function () {
-    $user = User::where('email', 'faizankhan2595@gmail.com')->first();
+    $user = User::where('email', 'talreja2605@gmail.com')->first();
 
     $user->notify(new GeneralNotification([
         'title' => 'ew2rwer!',
