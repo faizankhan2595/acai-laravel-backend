@@ -44,7 +44,7 @@ class GeneralNotification extends Notification
      */
     public function via($notifiable)
     {
-        return [CustomFcmChannel::class, 'database'];
+        return ['database', CustomFcmChannel::class];
     }
 
     /**
