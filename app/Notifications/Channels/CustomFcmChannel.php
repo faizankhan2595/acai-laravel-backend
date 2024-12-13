@@ -5,12 +5,16 @@ namespace App\Notifications\Channels;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cache;
 use Google\Client;
 
 class CustomFcmChannel
 {
     protected static $accessToken = null;
+    protected static $tokenExpiration = null;
+    private const TOKEN_CACHE_KEY = 'fcm_access_token';
+    private const TOKEN_EXPIRATION_CACHE_KEY = 'fcm_token_expiration';
+    private const TOKEN_BUFFER_TIME = 300; // 5 minutes buffer before actual expiration
 
     private function sendMulticastMessage($tokens, $serviceAccount, $accessToken, $notificationData)
     {
@@ -24,7 +28,6 @@ class CustomFcmChannel
             $failureCount = 0;
             $failedTokens = [];
 
-            // Send to each token
             foreach ($tokens as $token) {
                 if (empty($token)) continue;
 
@@ -65,15 +68,33 @@ class CustomFcmChannel
                 if ($response->successful()) {
                     $successCount++;
                 } else {
+                    $errorResponse = $response->json();
+                    
+                    // Check if token expired and retry once
+                    if ($this->isTokenExpirationError($errorResponse)) {
+                        Log::info('Token expired during request, refreshing and retrying');
+                        $accessToken = $this->getAccessToken(true);
+                        
+                        // Retry with new token
+                        $response = Http::withHeaders([
+                            'Authorization' => 'Bearer ' . $accessToken,
+                            'Content-Type' => 'application/json',
+                        ])->post($url, $message);
+                        
+                        if ($response->successful()) {
+                            $successCount++;
+                            continue;
+                        }
+                    }
+                    
                     $failureCount++;
                     $failedTokens[] = [
                         'token' => $token,
-                        'error' => $response->json()
+                        'error' => $errorResponse
                     ];
                 }
             }
 
-            // Log results
             Log::info('FCM Multicast Results', [
                 'total_tokens' => count($tokens),
                 'success_count' => $successCount,
@@ -96,16 +117,20 @@ class CustomFcmChannel
         }
     }
 
+    private function isTokenExpirationError($errorResponse)
+    {
+        return isset($errorResponse['error']['status']) && 
+               in_array($errorResponse['error']['status'], ['UNAUTHENTICATED', 'PERMISSION_DENIED']);
+    }
+
     public function send($notifiable, Notification $notification)
     {
         try {
             $notificationData = $notification->toFcmData($notifiable);
 
-            // Get the service account details
             $serviceAccountPath = env('FIREBASE_CREDENTIALS_PATH');
             $serviceAccount = json_decode(file_get_contents($serviceAccountPath), true);
 
-            // Get access token
             $accessToken = $this->getAccessToken();
 
             $tokens = $notifiable->deviceTokens()->pluck('fcm_token')->toArray();
@@ -128,11 +153,17 @@ class CustomFcmChannel
         }
     }
 
-    private function getAccessToken()
+    private function getAccessToken($forceRefresh = false)
     {
         try {
-            if (self::$accessToken !== null) {
-                return self::$accessToken;
+            if (!$forceRefresh) {
+                // Check if we have a valid cached token
+                $cachedToken = Cache::get(self::TOKEN_CACHE_KEY);
+                $tokenExpiration = Cache::get(self::TOKEN_EXPIRATION_CACHE_KEY);
+                
+                if ($cachedToken && $tokenExpiration && $tokenExpiration > (time() + self::TOKEN_BUFFER_TIME)) {
+                    return $cachedToken;
+                }
             }
 
             // Initialize Google Client
@@ -140,13 +171,15 @@ class CustomFcmChannel
             $client->setAuthConfig(env('FIREBASE_CREDENTIALS_PATH'));
             $client->addScope('https://www.googleapis.com/auth/firebase.messaging');
             
-            // Get access token
+            // Get new access token
             $client->fetchAccessTokenWithAssertion();
             $accessToken = $client->getAccessToken();
             
-            self::$accessToken = $accessToken['access_token'];
+            // Cache the token and its expiration
+            Cache::put(self::TOKEN_CACHE_KEY, $accessToken['access_token'], now()->addSeconds($accessToken['expires_in']));
+            Cache::put(self::TOKEN_EXPIRATION_CACHE_KEY, time() + $accessToken['expires_in'], now()->addSeconds($accessToken['expires_in']));
             
-            return self::$accessToken;
+            return $accessToken['access_token'];
         } catch (\Exception $e) {
             Log::error('Error getting access token', [
                 'error' => $e->getMessage(),
