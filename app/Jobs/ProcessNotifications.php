@@ -19,6 +19,8 @@ class ProcessNotifications implements ShouldQueue
     protected $notification;
     protected $requestData;
 
+    public $timeout = 21600;
+
     public function __construct(array $notification, array $requestData)
     {
         $this->notification = $notification;
