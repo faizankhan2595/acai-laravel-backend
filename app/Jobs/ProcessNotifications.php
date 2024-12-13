@@ -29,7 +29,6 @@ class ProcessNotifications implements ShouldQueue
     {
         return DB::table('notifications')
             ->where('notifiable_id', $userId)
-            ->where('notifiable_type', 'App\User')
             ->where('data', 'LIKE', '%' . $this->notification['title'] . '%')
             ->where('created_at', '>=', Carbon::now()->subDay())
             ->exists();

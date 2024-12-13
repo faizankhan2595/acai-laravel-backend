@@ -168,7 +168,6 @@ class CustomFcmChannel
         try {
             DB::table('notifications')
                 ->where('notifiable_id', $userId)
-                ->where('notifiable_type', 'App\Models\User') // Updated to use Models directory
                 ->where('data', 'LIKE', '%' . $title . '%')
                 ->where('created_at', '>=', Carbon::now()->subDay())
                 ->update([
