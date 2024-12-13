@@ -20,7 +20,7 @@ use Google\Client;
 use App\Notifications\Channels\CustomFcmChannel;
 use Carbon\Carbon;
 
-class GeneralNotification extends Notification
+class GeneralNotification extends Notification implements ShouldQueue
 {
     use Queueable;
     protected $data;
