@@ -142,6 +142,14 @@ class CustomFcmChannel
 
             $result = $this->sendMulticastMessage($tokens, $serviceAccount, $accessToken, $notificationData);
 
+            // Update notification record with success and failure counts
+            $this->updateNotificationCounts(
+                $notifiable->id, 
+                $notificationData['title'],
+                $result['success_count'],
+                $result['failure_count']
+            );
+
             return $result;
         } catch (\Exception $e) {
             Log::error('FCM Notification Failed', [
@@ -150,6 +158,35 @@ class CustomFcmChannel
                 'trace' => $e->getTraceAsString()
             ]);
             return false;
+        }
+    }
+
+    private function updateNotificationCounts($userId, $title, $successCount, $failureCount)
+    {
+        try {
+            DB::table('notifications')
+                ->where('notifiable_id', $userId)
+                ->where('notifiable_type', 'App\Models\User') // Updated to use Models directory
+                ->where('data', 'LIKE', '%' . $title . '%')
+                ->where('created_at', '>=', Carbon::now()->subDay())
+                ->update([
+                    'fcm_success_count' => $successCount,
+                    'fcm_failed_count' => $failureCount
+                ]);
+
+            Log::info('Updated notification counts', [
+                'user_id' => $userId,
+                'title' => $title,
+                'success_count' => $successCount,
+                'failure_count' => $failureCount
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to update notification counts', [
+                'error' => $e->getMessage(),
+                'user_id' => $userId,
+                'title' => $title,
+                'trace' => $e->getTraceAsString()
+            ]);
         }
     }
 

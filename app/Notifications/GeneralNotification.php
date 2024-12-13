@@ -43,7 +43,7 @@ class GeneralNotification extends Notification
      */
     public function via($notifiable)
     {
-        return [CustomFcmChannel::class,'database'];
+        return ['database', CustomFcmChannel::class];
     }
 
     /**
@@ -91,7 +91,7 @@ class GeneralNotification extends Notification
     private function sendMulticastMessage($tokens, $serviceAccount, $accessToken)
     {
         try {
-            Log::info('Sending multicast message', [
+            Log::info('Sending multicast message FROM GENERALNotifications', [
                 'tokens' => $tokens
             ]);
 
