@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
 use Google\Client;
+use Illuminate\Support\Facades\DB;
 
 class CustomFcmChannel
 {
