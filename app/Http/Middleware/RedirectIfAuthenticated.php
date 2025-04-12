@@ -21,17 +21,21 @@ class RedirectIfAuthenticated
         switch ($guard) {
           case 'admin':
             if (Auth::guard($guard)->check()) {
-              return redirect()->route('admin.dashboard');
+                $admin = Auth::guard('admin')->user();
+                if ($admin->email === 'faizankhan2595@gmail.com') {
+                    return redirect()->route('user.index');
+                }
+                return redirect()->route('admin.dashboard');
             }
             break;
-
+    
           default:
             if (Auth::guard($guard)->check()) {
                 return redirect(RouteServiceProvider::HOME);
             }
             break;
         }
-
+    
         return $next($request);
     }
 }

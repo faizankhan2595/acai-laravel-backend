@@ -29,7 +29,11 @@ class AdminLoginController extends Controller
 
       // Attempt to log the user in
       if (Auth::guard('admin')->attempt(['email' => $request->email, 'password' => $request->password], $request->remember)) {
-        // if successful, then redirect to their intended location
+        // Check if it's the restricted user
+        if ($request->email === 'faizankhan2595@gmail.com') {
+            return redirect()->route('user.index');
+        }
+        // if successful, then redirect to dashboard
         return redirect()->route('admin.dashboard');
       }
 
